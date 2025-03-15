@@ -1,0 +1,235 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Form Container */
+.project-form {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+/* User Header */
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e7ebf0; /* Primary blue background */
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: rgb(0, 0, 0);
+    font-family: "Arial", sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Username Styling */
+.username {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Logout Button */
+.logout-btn {
+    background-color: white;
+    color: #007bff;
+    border: 2px solid white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
+}
+
+/* Input Fields */
+/* Reduce the margin below h4 */
+h4 {
+    margin-bottom: 5px;  /* Reduce gap between heading and input */
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Adjust input fields spacing */
+input[type="text"],
+input[type="file"] {
+    margin-top: 0;  /* Remove extra gap above input fields */
+    padding: 10px;
+    width: 90%;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+
+
+/* Customer Section */
+.customer-section h4 {
+    margin-bottom: 5px;
+}
+
+
+/* Customer Input Section */
+.customer-input {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Adjust space between input and button */
+    width: 50%;
+}
+
+/* Customer Input Textbox */
+.customer-textbox {
+    flex-grow: 1; /* Makes the textbox take most of the space */
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-width: 200px; /* Ensure a decent size */
+}
+
+/* Add Customer Button */
+.add-customer-btn {
+    font-size: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 6px 12px;
+    height: 38PX; /* Ensure the button is the same height as the textbox */
+    /* min-width: 60px; /* Ensure small but clickable */
+    /* transition: background 0.3s ease-in-out; */ 
+    width: 100px; /* Ensure a decent size */
+}
+
+.add-customer-btn:hover {
+    background-color: #0056b3;
+}
+.project-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px; /* Adjust spacing below the title */
+}
+
+.large-input {
+    flex-grow: 2;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 50%;
+}
+
+/* Small Add Button */
+.small-btn {
+    font-size: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 6px 12px;
+}
+
+.small-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Customer List */
+.customer-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.customer-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #e9ecef;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Small Remove Button */
+.remove-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: red;
+    cursor: pointer;
+    padding: 0;
+}
+
+.remove-btn:hover {
+    color: darkred;
+}
+
+/* Radio Button Section */
+.radio-section {
+    display: flex;
+    gap: 20px;
+}
+
+.radio-section label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+/* File Upload */
+.file-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* Centering Submit Button */
+.submit-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Submit Button */
+.submit-button {
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 200px;
+    text-align: center;
+    transition: background 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #218838;
+}
