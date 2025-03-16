@@ -22,7 +22,7 @@ const CreateProject = () => {
   const [message, setMessage] = useState("");
  
   const mv4Groups = [
-    "$mv4[speed:[*spd*],temp:[*temperature*],voltage:[*vltg*],power:[*pwr*]]",
+    "$mv4[speed:[*spd*],temp:[*spd*],voltage:[*vltg*],power:[*pwr*]]",
     "$mv4[rate:[*rt*],capacity:[*cap*],efficiency:[*eff*],signal:[*sig*]]",
     "$mv4[load:[*ld*],torque:[*trq*],frequency:[*freq*],current:[*curr*]]",
     "$mv4[pressure:[*pres*],flow:[*flw*],altitude:[*alt*],angle:[*ang*]]",
@@ -80,7 +80,33 @@ const CreateProject = () => {
     projectData.append("mv6", showMv6 ? selectedLinesmv6.join(", ") : "");
     projectData.append("regmap", regmapFile);
     projectData.append("regmapBin", regmapBinFile);
-    
+    const mv4txt=showMv4 ? selectedLinesmv4.join(", ") : "";
+    const mv6txt=showMv6 ? selectedLinesmv6.join(", ") : "";
+    const regex = /\[\*(.*?)\*\]/g;
+    const table_names=[];
+      // Use a Set to store unique variables
+      const uniqueVariables1 = new Set();
+
+      let match1;
+      while ((match1 = regex.exec(mv4txt)) !== null) {
+          uniqueVariables1.add(match1[1]); // Add unique variable to Set
+      }
+
+      // Convert Set to array
+      const uniqueArray1 = [...uniqueVariables1];
+
+     // console.log(uniqueArray1);
+      const uniqueVariables2= new Set();
+
+      let match2;
+      while ((match2 = regex.exec(mv6txt)) !== null) {
+          uniqueVariables2.add(match2[1]); // Add unique variable to Set
+      }
+
+      // Convert Set to array
+      const uniqueArray2 = [...uniqueVariables2];
+
+     // console.log(uniqueArray2);
     try {
       const response = await createProject(projectData);
       localStorage.setItem("projectId", response.projectId); // Store project ID in local storage
@@ -94,11 +120,16 @@ const CreateProject = () => {
       table_name: `${name}_${customer.name}_${interfaceType}`,
       customer_id: customer.id
       }));
-
+      customerResponse.customers.map((customer) => {
+      table_names.push(`${name}_${customer.name}_${interfaceType}`);
+      });
+      //console.log(table_names);
+      
     // Send settings to backend
      await addSettings(settings);
-    console.log("Project, customers, and settings added successfully!");
 
+    console.log("Project, customers, and settings added successfully!");
+     
 
      }
       
