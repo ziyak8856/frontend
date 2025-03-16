@@ -31,9 +31,9 @@ export const fetchProjects = async () => {
 // Create a new project
 export const createProject = async (formData) => {
   try {
-         formData.forEach((value, key) => {
-      console.log(key, value);  
-     });
+    //      formData.forEach((value, key) => {
+    //   console.log(key, value);  
+    //  });
     const response = await axios.post(`${API_BASE_URL}/projects`, formData, {
       headers: { "Content-Type": "multipart/form-data", ...getAuthHeaders().headers },
     });
@@ -55,16 +55,17 @@ export const fetchCustomers = async (projectId) => {
 };
 
 // Add a new customer to a project
-export const addCustomer = async ({ project_id, name }) => {
+export const addCustomers = async (projectId, customers) => {
   try {
+    // console.log(customers);
     const response = await axios.post(
       `${API_BASE_URL}/customers`,
-      { project_id, name },
+      { projectId, customers },
       getAuthHeaders()
     );
     return response.data;
   } catch (error) {
-    throw error.response?.data?.message || "Adding customer failed.";
+    throw error.response?.data?.message || "Adding customers failed.";
   }
 };
 
@@ -80,18 +81,15 @@ export const fetchSettings = async (customerId) => {
 };
 
 // Add a new setting to a customer
-export const addSetting = async ({ customer_id, name, table_name }) => {
+export const addSettings = async (settings) => {
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/settings`,
-      { customer_id, name, table_name },
-      getAuthHeaders()
-    );
+    const response = await axios.post(`${API_BASE_URL}/settings`, { settings }, getAuthHeaders());
     return response.data;
   } catch (error) {
-    throw error.response?.data?.message || "Adding setting failed.";
+    throw error.response?.data?.message || "Settings creation failed.";
   }
 };
+
 
 // Fetch all modes for a customer
 export const fetchModes = async (customerId) => {

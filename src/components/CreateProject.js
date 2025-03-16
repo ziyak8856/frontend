@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createProject } from "../services/api";
+import { addCustomers } from "../services/api";
+import { addSettings } from "../services/api";
 import "../styles/CreateProject.css";
 
 const CreateProject = () => {
@@ -69,33 +71,39 @@ const CreateProject = () => {
     if (!regmapBinFile) return setError("Regmap Bin file is required.");
     
     setError("");
-    // console.log(name, customers, clockRate, cphy, dphy, selectedLinesmv4, selectedLinesmv6, regmapFile, regmapBinFile);
-  //   const formData = new FormData();
-  //   formData.append("customers", JSON.stringify(customers));
-  //   formData.append("clockRate", clockRate);
-  //   formData.append("interfaceType", cphy ? "CPHY" : "DPHY");
-       
-  //  // console.log(formData.getAll("name"));
-  //    formData.forEach((value, key) => {
-  //     console.log(key, value);  
-  //    });
-    // try {
-    //   await createProject(formData);
-    //   navigate("/dashboard");
-    // } catch (err) {
-    //   setError(err.message || "Project creation failed.");
-    // }
+    let interfaceType=cphy ? "cphy" : "dphy";
+        interfaceType+='_'+clockRate;
+    console.log(interfaceType);
     const projectData = new FormData();
     projectData.append("name", name);
     projectData.append("mv4", showMv4 ? selectedLinesmv4.join(", ") : "");
     projectData.append("mv6", showMv6 ? selectedLinesmv6.join(", ") : "");
     projectData.append("regmap", regmapFile);
     projectData.append("regmapBin", regmapBinFile);
-
+    
     try {
       const response = await createProject(projectData);
       localStorage.setItem("projectId", response.projectId); // Store project ID in local storage
       console.log(`Project created successfully: ID ${response.projectId}`);
+      const customerResponse = await addCustomers(parseInt(response.projectId), customers);
+  
+      if (customerResponse && customerResponse.customers) {
+    // Prepare settings data
+      const settings = customerResponse.customers.map((customer) => ({
+      name: interfaceType, // Common name for all settings
+      table_name: `${name}_${customer.name}_${interfaceType}`,
+      customer_id: customer.id
+      }));
+
+    // Send settings to backend
+     await addSettings(settings);
+    console.log("Project, customers, and settings added successfully!");
+
+
+     }
+      
+      
+
     } catch (error) {
       setError(`Error: ${error}`|| "Project creation failed.");
     } 
