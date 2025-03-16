@@ -37,10 +37,11 @@ const Login = () => {
       const data = await loginUser(email, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
+      // localStorage.setItem("projectId", response.projectId);
       if (newProject) {
         navigate("/create-project");
       } else if (selectedProject) {
+        localStorage.setItem("projectId", selectedProject);
         navigate("/dashboard");
       }
     } catch (errorMessage) {
