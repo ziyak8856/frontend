@@ -81,9 +81,9 @@ export const fetchSettings = async (customerId) => {
 };
 
 // Add a new setting to a customer
-export const addSettings = async (settings) => {
+export const addSettings = async (settings,uniqueArray1) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/settings`, { settings }, getAuthHeaders());
+    const response = await axios.post(`${API_BASE_URL}/settings`, { settings,uniqueArray1 }, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw error.response?.data?.message || "Settings creation failed.";

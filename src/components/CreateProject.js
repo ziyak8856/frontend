@@ -19,7 +19,7 @@ const CreateProject = () => {
   const [selectedLinesmv4, setSelectedLinesmv4] = useState([]);
   const [selectedLinesmv6, setSelectedLinesmv6] = useState([]);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+
  
   const mv4Groups = [
     "$mv4[speed:[*spd*],temp:[*spd*],voltage:[*vltg*],power:[*pwr*]]",
@@ -28,7 +28,7 @@ const CreateProject = () => {
     "$mv4[pressure:[*pres*],flow:[*flw*],altitude:[*alt*],angle:[*ang*]]",
   ];
   const mv6Groups = [
-    "$mv6[speed:[*spdp*],temp:[*tempera*],voltage:[*vltg*],power:[*pwr*]]",
+    "$mv6[speed:[*spd*],temp:[*tempera*],voltage:[*vltg*],power:[*pwr*]]",
     "$mv6[rate:[*rti*],capacity:[*cap*],efficiency:[*effi*],signal:[*sig*]]",
   ];
 
@@ -83,7 +83,7 @@ const CreateProject = () => {
     const mv4txt=showMv4 ? selectedLinesmv4.join(", ") : "";
     const mv6txt=showMv6 ? selectedLinesmv6.join(", ") : "";
     const regex = /\[\*(.*?)\*\]/g;
-    const table_names=[];
+   // const table_names=[];
       // Use a Set to store unique variables
       const uniqueVariables1 = new Set();
 
@@ -93,19 +93,19 @@ const CreateProject = () => {
       }
 
       // Convert Set to array
-      const uniqueArray1 = [...uniqueVariables1];
+     // const uniqueArray1 = [...uniqueVariables1];
 
      // console.log(uniqueArray1);
-      const uniqueVariables2= new Set();
+     // const uniqueVariables2= new Set();
 
       let match2;
       while ((match2 = regex.exec(mv6txt)) !== null) {
-          uniqueVariables2.add(match2[1]); // Add unique variable to Set
+          uniqueVariables1.add(match2[1]); // Add unique variable to Set
       }
 
       // Convert Set to array
-      const uniqueArray2 = [...uniqueVariables2];
-
+      const uniqueArray1 = [...uniqueVariables1];
+      console.log(uniqueArray1);
      // console.log(uniqueArray2);
     try {
       const response = await createProject(projectData);
@@ -120,13 +120,14 @@ const CreateProject = () => {
       table_name: `${name}_${customer.name}_${interfaceType}`,
       customer_id: customer.id
       }));
-      customerResponse.customers.map((customer) => {
-      table_names.push(`${name}_${customer.name}_${interfaceType}`);
-      });
+      // customerResponse.customers.map((customer) => {
+      // table_names.push(`${name}_${customer.name}_${interfaceType}`);
+      // });
       //console.log(table_names);
       
     // Send settings to backend
-     await addSettings(settings);
+    console.log(uniqueArray1)
+     await addSettings(settings,uniqueArray1);
 
     console.log("Project, customers, and settings added successfully!");
      
