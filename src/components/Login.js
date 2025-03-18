@@ -8,6 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
+  const [selectedProjectName, setSelectedProjectName] = useState("");
   const [newProject, setNewProject] = useState(false);
   const navigate = useNavigate();
   
@@ -42,6 +43,7 @@ const Login = () => {
         navigate("/create-project");
       } else if (selectedProject) {
         localStorage.setItem("projectId", selectedProject);
+        localStorage.setItem("projectName", selectedProjectName);
         navigate("/dashboard");
       }
     } catch (errorMessage) {
@@ -57,13 +59,24 @@ const Login = () => {
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
         <label>Select Project:</label>
-        <select 
-          value={selectedProject} 
-          onChange={(e) => { setSelectedProject(e.target.value); setNewProject(false); }} 
-        >
-          <option value="">-- Select --</option>
-          {projects.map((proj) => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
-        </select>
+                    <select 
+              value={selectedProject} 
+              onChange={(e) => { 
+                const selectedId = e.target.value;
+                const selectedProj = projects.find(proj => proj.id === parseInt(selectedId));
+
+                if (selectedProj) {
+                  setSelectedProject(selectedId); 
+                  setSelectedProjectName(selectedProj.name); // Store project name
+                  setNewProject(false);
+                }
+              }} 
+            >
+              <option value="">-- Select --</option>
+              {projects.map((proj) => (
+                <option key={proj.id} value={proj.id}>{proj.name}</option>
+              ))}
+            </select>
 
         <div className="radio-group">
           <label>

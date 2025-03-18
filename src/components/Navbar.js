@@ -9,6 +9,8 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("projectId");
+    localStorage.removeItem("projectName");
     navigate("/");
   };
 

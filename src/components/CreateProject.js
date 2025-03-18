@@ -19,7 +19,7 @@ const CreateProject = () => {
   const [selectedLinesmv4, setSelectedLinesmv4] = useState([]);
   const [selectedLinesmv6, setSelectedLinesmv6] = useState([]);
   const [error, setError] = useState("");
-
+  const [loading, setLoading] = useState(false);
  
   const mv4Groups = [
     "$mv4[speed:[*spd*],temp:[*spd*],voltage:[*vltg*],power:[*pwr*]]",
@@ -59,7 +59,9 @@ const CreateProject = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    setLoading(true);
+    setError("");
     // Validation checks
     if (!name) return setError("Project Name is required.");
     if (customers.length === 0) return setError("At least one customer is required.");
@@ -107,9 +109,11 @@ const CreateProject = () => {
       const uniqueArray1 = [...uniqueVariables1];
       console.log(uniqueArray1);
      // console.log(uniqueArray2);
-    try {
+     try {
       const response = await createProject(projectData);
-      localStorage.setItem("projectId", response.projectId); // Store project ID in local storage
+      localStorage.setItem("projectId", response.projectId);
+      localStorage.setItem("projectName", name);
+       // Store project ID in local storage
       console.log(`Project created successfully: ID ${response.projectId}`);
       const customerResponse = await addCustomers(parseInt(response.projectId), customers);
   
@@ -130,15 +134,13 @@ const CreateProject = () => {
      await addSettings(settings,uniqueArray1);
 
     console.log("Project, customers, and settings added successfully!");
-     
-
-     }
-      
-      
-
-    } catch (error) {
-      setError(`Error: ${error}`|| "Project creation failed.");
-    } 
+    navigate("/dashboard");
+    }}catch (err) {
+      setError("Project creation failed. Please try again.");
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
     
     
   };
@@ -147,11 +149,17 @@ const CreateProject = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("projectId");
+    localStorage.removeItem("projectName");
     navigate("/");
   };
 
   return (
     <div>
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="project-form">
         <div className="user-header">
           <span className="username">Hi, {user?.name}</span>
@@ -277,8 +285,8 @@ const CreateProject = () => {
         </div>
         {error && <div className="error-message">{error}</div>}
         <div className="submit-container">
-          <button type="submit" className="submit-button">
-            Create Project
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? "Creating..." : "Create Project"}
           </button>
         </div>
       </form>
