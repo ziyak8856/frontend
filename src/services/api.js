@@ -115,3 +115,25 @@ export const addMode = async ({ customer_id, name }) => {
     throw error.response?.data?.message || "Adding mode failed.";
   }
 };
+
+export const uploadRegmap = async ({ file, projectId, name }) => {
+  try {
+    const formData = new FormData();
+    formData.append("regmap", file);
+    formData.append("projectId", projectId);
+    formData.append("name", name);
+          formData.forEach((value, key) => {
+      console.log(key, value);  
+     });
+    const response = await axios.post(`${API_BASE_URL}/projects/upload-regmap`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        ...getAuthHeaders().headers, // Include auth headers if needed
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Regmap upload failed.";
+  }
+};

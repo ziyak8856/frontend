@@ -28,6 +28,6 @@ button {
   cursor: pointer;
 } */
 button:disabled {
-  background-color: gray;
+  background-color:white;
   cursor: not-allowed;
 }
