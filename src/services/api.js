@@ -28,6 +28,16 @@ export const fetchProjects = async () => {
   }
 };
 
+export const fetchProjectById = async (projectId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/projects/${projectId}`, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching project details:", error);
+    throw error;
+  }
+};
+
 // Create a new project
 export const createProject = async (formData) => {
   try {
