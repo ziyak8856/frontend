@@ -147,3 +147,29 @@ export const uploadRegmap = async ({ file, projectId, name }) => {
     throw error.response?.data?.message || "Regmap upload failed.";
   }
 };
+export const addSetting = async (customerId, name, tableName, uniqueArray) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/settings/add`, {
+      customer_id: customerId,
+      name,
+      table_name: tableName,
+      uniqueArray1: uniqueArray
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error adding setting:", error);
+    throw error;
+  }
+};
+ 
+export const getCustomerById = async (customerId) => {
+  try {
+    console.log("customerrr",customerId);
+    const response = await axios.get(`${API_BASE_URL}/customers/single/${customerId}`, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    return null;
+  }
+};

@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Navbar.css";
 import userIcon from "../assets/icons8-user-50-2.png";
 import projectIcon from "../assets/project.png";
-import { uploadRegmap, fetchCustomers,fetchModes,fetchProjectById } from "../services/api";
+import { uploadRegmap, fetchCustomers,fetchModes,fetchProjectById,fetchSettings, fetchCustomerById } from "../services/api";
 import AddCustomerModal from "./AddCustomerModal";
 import AddModeModal from "./AddModeModal";
+import AddMkclTableModal from "./AddMkclTableModal";
 const Navbar = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
@@ -13,7 +14,6 @@ const Navbar = () => {
     const projectId = localStorage.getItem("projectId");
 
     const [selectedModes, setSelectedModes] = useState([]);
-    const [selectedMkclTables, setSelectedMkclTables] = useState([]);
     const [valueType, setValueType] = useState("hex");
     const [selectedFile, setSelectedFile] = useState(null);
     const [message, setMessage] = useState("");
@@ -25,14 +25,22 @@ const Navbar = () => {
     const [isModeModalOpen, setModeModalOpen] = useState(false);
     const [projectDetails, setProjectDetails] = useState(null);
     const [uniqueVariables, setUniqueVariables] = useState([]);
-    const mkclTables = ["MKCL Table 1", "MKCL Table 2"];
+    const [mkclTables, setMkclTables] = useState([]);
+    const [selectedMkclTables, setSelectedMkclTables] = useState([]);
+    const [ismkclModalOpen, setmkclModalOpen] = useState(false);
 
     const toggleSelection = (item, setSelected) => {
         setSelected((prev) =>
             prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
         );
     };
-   
+    const toggleSelectiontable = (tableName) => {
+        setSelectedMkclTables((prev) =>
+          prev.includes(tableName)
+            ? prev.filter((t) => t !== tableName)
+            : [...prev, tableName]
+        );
+      };
       
     const handleLogout = () => {
         ["token", "user", "projectId", "projectName"].forEach(item => localStorage.removeItem(item));
@@ -102,6 +110,7 @@ const Navbar = () => {
     useEffect(() => {
       if (selectedCustomer) {
         fetchModesList(selectedCustomer);
+        fetchTables();
         // setSelectedModes([]); // Reset selected modes
       }else{
         setModes([]);
@@ -159,12 +168,22 @@ const Navbar = () => {
       setUniqueVariables([...variables]);
 
        // Convert Set to Array
-    //    console.log("Unique Variables:", uniqueVariables); // Log unique variables
+        console.log("Unique Variables:", uniqueVariables); // Log unique variables
   };
   useEffect(() => {
     if(uniqueVariables.length)
     console.log("Updated unique variables:", uniqueVariables);
   }, [uniqueVariables]);
+
+  const fetchTables = async () => {
+    try {
+      const data = await fetchSettings(selectedCustomer);
+      setMkclTables(data);
+      setSelectedMkclTables([]); // Reset selection on customer change
+    } catch (error) {
+      console.error("Error fetching MKCL tables:", error);
+    }
+  };
 
     return (
         <nav className="navbar">
@@ -241,21 +260,32 @@ const Navbar = () => {
       </div>
                 {/* MKCL Table Selection */}
                 <div className="mkcl-section">
-                    <h3>MKCL TABLES:</h3>
-                    <div className="radio-container">
-                        {mkclTables.map((table) => (
-                            <label key={table} className="radio-label">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedMkclTables.includes(table)}
-                                    onChange={() => toggleSelection(table, setSelectedMkclTables)}
-                                />
-                                {table}
-                            </label>
-                        ))}
-                        <button className="nav-btn">Add MKCL Table</button>
-                    </div>
-                </div>
+        <h3>MKCL TABLES:</h3>
+        <div className="radio-container">
+          {mkclTables.map((table) => (
+            <label key={table.table_name} className="radio-label">
+              <input
+                type="checkbox"
+                checked={selectedMkclTables.includes(table.table_name)}
+                onChange={() => toggleSelectiontable(table.table_name)}
+              />
+              {table.name}
+            </label>
+          ))}
+          <button className="nav-btn" onClick={() => setmkclModalOpen(true)}>Add MKCL Table</button>
+        </div>
+      </div>
+
+      {/* Add MKCL Table Modal */}
+      <AddMkclTableModal
+        isOpen={ismkclModalOpen}
+        onClose={() => setmkclModalOpen(false)}
+        projectName={projectName}
+        customerName={selectedCustomer}
+        customerId={selectedCustomer}
+        uniqueArray1={uniqueVariables}
+        refreshModes={() => fetchTables(selectedCustomer)}
+      />
 
                 {/* Value Type Selection */}
                 <div className="value-section">
