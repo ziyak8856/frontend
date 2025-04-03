@@ -8,31 +8,34 @@ import "../styles/Dashboard.css";
 const Dashboard = () => {
   const [showGlobal, setShowGlobal] = useState(true);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedMode, setSelectedMode] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedModes, setSelectedModes] = useState(null);
+  const [selectedSetFiles, setSelectedSetFiles] = useState({});
+  
 
   return (
     <div>
       {/* Pass data and handlers to Navbar */}
       <Navbar
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        selectedMode={selectedMode}
-        setSelectedMode={setSelectedMode}
-        selectedFile={selectedFile}
+        selectedModes={selectedModes}
+        setSelectedModes={setSelectedModes}
+       
       />
 
       <div className={`dashboard-container ${showGlobal ? "" : "expanded"}`}>
         {/* Editable File Data Table */}
         <div className="section data-table">
           <h2>File Data Table</h2>
-          <FileDataTable selectedFile={selectedFile} />
+          <FileDataTable  selectedSetFiles={selectedSetFiles} />
         </div>
 
         {/* File List */}
         <div className="section file-list">
           <h2>Available Files</h2>
-          <FileList setSelectedFile={setSelectedFile} />
+          <FileList
+          selectedModes={selectedModes}
+          selectedSetFiles={selectedSetFiles}
+          setSelectedSetFiles={setSelectedSetFiles}
+        />
         </div>
 
         {/* Global Data Section */}

@@ -173,3 +173,46 @@ export const getCustomerById = async (customerId) => {
     return null;
   }
 };
+export const fetchSetFilesbyMode = async (modeId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/setfile/getSetFiles?mode_id=${modeId}`,getAuthHeaders());
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("API error:", error);
+    return { message: "Error fetching data" };
+  }
+};
+export const fetchTableNameBySettingId = async (settingId) => {
+  try {
+    console.log("settingId",settingId);
+    const response = await fetch(`${API_BASE_URL}/settings/getTableName/${settingId}`, getAuthHeaders());
+    const data = await response.json();
+    return data.table_name;
+  } catch (error) {
+    console.error("Error fetching table name:", error);
+    return "Unknown";
+  }
+};
+// Ensure these are correctly imported
+
+export const fetchTableData = async (tableName, columnName) => {
+  console.log("tableName:", tableName);
+  console.log("columnName:", columnName);
+
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/get-table-data`,
+      { tableName, columnName }, // Send as request body
+      {
+        headers: { ...getAuthHeaders().headers }, // Include authentication headers
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching table data:", error);
+    throw error;
+  }
+};
+

@@ -7,13 +7,13 @@ import { uploadRegmap, fetchCustomers,fetchModes,fetchProjectById,fetchSettings,
 import AddCustomerModal from "./AddCustomerModal";
 import AddModeModal from "./AddModeModal";
 import AddMkclTableModal from "./AddMkclTableModal";
-const Navbar = () => {
+const Navbar = ({selectedModes,setSelectedModes}) => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
     const projectName = localStorage.getItem("projectName") || "No Project Selected";
     const projectId = localStorage.getItem("projectId");
 
-    const [selectedModes, setSelectedModes] = useState([]);
+   // const [selectedModes, setSelectedModes] = useState([]);
     const [valueType, setValueType] = useState("hex");
     const [selectedFile, setSelectedFile] = useState(null);
     const [message, setMessage] = useState("");
@@ -242,8 +242,8 @@ const Navbar = () => {
               <input
                 type="checkbox"
                 value={mode.id}
-                checked={selectedModes.includes(mode.id)}
-                onChange={() => handleModeSelection(mode.id)}
+                checked={selectedModes.includes(mode)}
+                onChange={() => handleModeSelection(mode)}
               />
               {mode.name}
             </label>
@@ -266,8 +266,9 @@ const Navbar = () => {
             <label key={table.table_name} className="radio-label">
               <input
                 type="checkbox"
-                checked={selectedMkclTables.includes(table.table_name)}
-                onChange={() => toggleSelectiontable(table.table_name)}
+                value={table.table_name}
+                checked={selectedMkclTables.includes(table)}
+                onChange={() => toggleSelectiontable(table)}
               />
               {table.name}
             </label>
@@ -288,23 +289,7 @@ const Navbar = () => {
       />
 
                 {/* Value Type Selection */}
-                <div className="value-section">
-                    <h3>VALUE:</h3>
-                    <div className="radio-container">
-                        {['hex', 'dec'].map((type) => (
-                            <label key={type} className="radio-label">
-                                <input
-                                    type="radio"
-                                    name="valueType"
-                                    value={type}
-                                    checked={valueType === type}
-                                    onChange={() => setValueType(type)}
-                                />
-                                {type.toUpperCase()}
-                            </label>
-                        ))}
-                    </div>
-                </div>
+                
             </div>
         </nav>
     );

@@ -1,0 +1,37 @@
+/* Style for mode name */
+.mode-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Style for mode list */
+  .mode-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  /* Style for file checkboxes */
+  .file-list {
+    list-style: none;
+    margin-top: 5px;
+    padding-left: 20px;
+  }
+  
+  .file-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+  }
+  
+  .file-item input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+    cursor: pointer;
+  }
+  
+  .file-item label {
+    font-size: 14px;
+    cursor: pointer;
+  }
+  

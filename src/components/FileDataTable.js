@@ -1,102 +1,159 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { fetchTableNameBySettingId, fetchTableData } from "../services/api"; // Import API functions
 
-const FileDataTable = ({ selectedFile }) => {
-  const initialData = Array.from({ length: 10 }, (_, rowIndex) => ({
-    id: rowIndex + 1,
-    Parameter: `Signal ${rowIndex + 1}`,
-    Value: `${(rowIndex + 1) * 0.5}V`,
-    KITON: `KITON-${rowIndex + 1}`,
-    ZENON: `ZEN-${rowIndex + 1}`,
-    SEP: `SEP-${rowIndex + 1}`,
-    ZEOP: `ZEOP-${rowIndex + 1}`,
-    EXTRA1: `EXTRA1-${rowIndex + 1}`,
-    EXTRA2: `EXTRA2-${rowIndex + 1}`,
-    EXTRA3: `EXTRA3-${rowIndex + 1}`,
-    EXTRA4: `EXTRA4-${rowIndex + 1}`
-  }));
+const FileDataTable = ({ selectedSetFiles }) => {
+  const [tableNames, setTableNames] = useState({}); // Store setting_id -> table_name mapping
+  const [tableData, setTableData] = useState([]); // Store merged table data
+  const [columns, setColumns] = useState(["id", "Tunning_param"]); // Store dynamically added columns
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [displayFormat, setDisplayFormat] = useState("hex"); // "hex" or "dec"
 
-  const [data, setData] = useState(initialData);
+  useEffect(() => {
+    const fetchTableNames = async () => {
+      setLoading(true);
+      setError("");
 
-  const handleEdit = (id, field, newValue) => {
-    setData(
-      data.map((row) => (row.id === id ? { ...row, [field]: newValue } : row))
-    );
+      try {
+        const newTableNames = { ...tableNames };
+        const fetchPromises = Object.values(selectedSetFiles).map(async (file) => {
+          if (!newTableNames[file.setting_id]) {
+            try {
+              const tableName = await fetchTableNameBySettingId(file.setting_id);
+              newTableNames[file.setting_id] = tableName || "Unknown Table";
+            } catch (err) {
+              console.error(`Error fetching table name for ${file.setting_id}:`, err);
+              newTableNames[file.setting_id] = "Error Loading";
+            }
+          }
+        });
+
+        await Promise.all(fetchPromises);
+        setTableNames(newTableNames);
+      } catch (error) {
+        setError("Failed to fetch table names.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (Object.keys(selectedSetFiles).length > 0) {
+      fetchTableNames();
+    } else {
+      setTableData([]); // Clear table data when no file is selected
+    }
+  }, [selectedSetFiles]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!Object.keys(tableNames).length) return; // Wait until table names are fetched
+
+      setLoading(true);
+      setError("");
+
+      try {
+        const allData = {};
+        let newColumns = ["id", "Tunning_param"]; // Always include base columns
+
+        const fetchPromises = Object.values(selectedSetFiles).map(async (file) => {
+          const tableName = tableNames[file.setting_id]; // Get table name
+          const columnName = file.name; // Get column name
+
+          if (tableName && columnName) {
+            try {
+              const data = await fetchTableData(tableName, columnName);
+              if (data && data.rows) {
+                newColumns.push(columnName); // Add the new column dynamically
+
+                data.rows.forEach((row) => {
+                  const id = row.id;
+                  if (!allData[id]) {
+                    allData[id] = { id, Tunning_param: row.Tunning_param };
+                  }
+                  allData[id][columnName] = row[columnName] || "-"; // Assign column value
+                });
+              }
+            } catch (err) {
+              console.error(`Error fetching table data for ${tableName}:`, err);
+            }
+          }
+        });
+
+        await Promise.all(fetchPromises);
+        setColumns([...new Set(newColumns)]); // Remove duplicates
+        setTableData(Object.values(allData)); // Convert to array
+      } catch (error) {
+        setError("Failed to fetch table data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [tableNames]);
+
+  // Convert Hex to Decimal
+  const convertValue = (value) => {
+    if (!value || value === "-") return "-";
+    return displayFormat === "hex" ? value.toString().toUpperCase() : parseInt(value, 16);
   };
 
   return (
-    <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          textAlign: "left",
-          background: "#fff",
-          border: "1px solid #ddd",
-          fontSize: "14px",
-          tableLayout: "auto", // Allow table to expand dynamically
-        }}
-      >
-        <thead>
-          <tr style={{ background: "#007bff", color: "white" }}>
-            {Object.keys(initialData[0])
-              .slice(1)
-              .map((header) => (
-                <th
-                  key={header}
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "8px",
-                    minWidth: "120px", // Set a minimum width to avoid shrinking
-                    whiteSpace: "nowrap", // Prevents text from breaking into multiple lines
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {header}
-                </th>
+    <div>
+    {loading && <p>Loading data...</p>}
+    {error && <p style={{ color: "red" }}>{error}</p>}
+  
+    {/* Radio Buttons for Hex/Decimal Selection */}
+    <div>
+      <label>
+        <input
+          type="radio"
+          name="format"
+          value="hex"
+          checked={displayFormat === "hex"}
+          onChange={() => setDisplayFormat("hex")}
+        />
+        Hexadecimal
+      </label>
+      <label style={{ marginLeft: "20px" }}>
+        <input
+          type="radio"
+          name="format"
+          value="dec"
+          checked={displayFormat === "dec"}
+          onChange={() => setDisplayFormat("dec")}
+        />
+        Decimal
+      </label>
+    </div>
+  
+    {tableData.length > 0 && (
+      <div>
+        <table border="1">
+          <thead>
+            <tr>
+              {columns.map((col, index) => (
+                <th key={index}>{col}</th>
               ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row) => (
-            <tr key={row.id}>
-              {Object.keys(row)
-                .slice(1)
-                .map((field) => (
-                  <td
-                    key={field}
-                    style={{
-                      border: "1px solid #ddd",
-                      padding: "8px",
-                      minWidth: "120px",
-                      maxWidth: "300px", // Allow expansion but set a max limit
-                      wordBreak: "break-word", // Ensure text wraps within the cell
-                    }}
-                  >
-                    <input
-                      type="text"
-                      value={row[field]}
-                      onChange={(e) => handleEdit(row.id, field, e.target.value)}
-                      style={{
-                        width: "100%",
-                        border: "none",
-                        outline: "none",
-                        fontSize: "14px",
-                        background: "transparent",
-                        textAlign: "center",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    />
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, index) => (
+              <tr key={index}>
+                {columns.map((col, colIndex) => (
+                  <td key={colIndex}>
+                    {/* Exclude conversion for "Tunning_param" */}
+                    {col === "Tunning_param" ? row[col] : convertValue(row[col])}
                   </td>
                 ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+  );  
 };
 
 export default FileDataTable;
