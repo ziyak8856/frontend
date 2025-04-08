@@ -1,0 +1,84 @@
+.file-table-wrapper {
+    overflow-x: auto;
+    padding: 20px;
+  }
+  
+  .display-toggle-btn {
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    cursor: pointer;
+  }
+  
+  .file-table1 {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .file-table-header {
+    background-color: #f1f1f1;
+  }
+  
+  .file-table-header th {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .file-table-cell,
+  .file-table-row td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .file-editing-cell {
+    background-color: #fff3cd;
+  }
+  
+  .file-edit-input {
+    width: 100%;
+    padding: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+  .file-plus-btn-row {
+    position: relative;
+    height: 0px;
+  }
+  
+  .file-plus-btn-container {
+    position: absolute;
+    left: -35px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .file-plus-btn {
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    background-color: #e9ecef;
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .file-save-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  

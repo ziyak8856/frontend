@@ -215,4 +215,37 @@ export const fetchTableData = async (tableName, columnName) => {
     throw error;
   }
 };
+ 
+
+export const updateRowAPI = async (tableName, id, columnName, value) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/update-row`,
+      { tableName, id, columnName, value },
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating row:", error);
+    throw error;
+  }
+};
+
+export const addRowAPI = async (tableName, referenceId, position, rowData,defaultValue) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/add-row`,
+      { tableName, referenceId, position, rowData,defaultValue },
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding row:", error);
+    throw error;
+  }
+};
 
