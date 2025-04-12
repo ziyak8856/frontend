@@ -234,6 +234,7 @@ export const updateRowAPI = async (tableName, id, columnName, value) => {
 };
 
 export const addRowAPI = async (tableName, referenceId, position, rowData,defaultValue) => {
+  
   try {
     const response = await axios.post(
       `${API_BASE_URL}/setfile/add-row`,

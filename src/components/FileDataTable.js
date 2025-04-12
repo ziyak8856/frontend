@@ -5,7 +5,8 @@ import {
   addRowAPI,
   updateRowAPI,
 } from "../services/api";
-import "../styles/FileData.css"; // Ensure this path is correct
+import "../styles/FileData.css";
+
 const FileDataTable = ({ selectedSetFiles }) => {
   const [tableNames, setTableNames] = useState({});
   const [tableData, setTableData] = useState([]);
@@ -15,7 +16,7 @@ const FileDataTable = ({ selectedSetFiles }) => {
   const [displayFormat, setDisplayFormat] = useState("hex");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+  const [newRows, setNewRows] = useState([]);
 
   useEffect(() => {
     const fetchTableNames = async () => {
@@ -23,13 +24,14 @@ const FileDataTable = ({ selectedSetFiles }) => {
       setError("");
       try {
         const newTableNames = { ...tableNames };
-        const fetchPromises = Object.values(selectedSetFiles).map(async (file) => {
-          if (!newTableNames[file.setting_id]) {
-            const tableName = await fetchTableNameBySettingId(file.setting_id);
-            newTableNames[file.setting_id] = tableName || "Unknown Table";
-          }
-        });
-        await Promise.all(fetchPromises);
+        await Promise.all(
+          Object.values(selectedSetFiles).map(async (file) => {
+            if (!newTableNames[file.setting_id]) {
+              const tableName = await fetchTableNameBySettingId(file.setting_id);
+              newTableNames[file.setting_id] = tableName || "Unknown Table";
+            }
+          })
+        );
         setTableNames(newTableNames);
       } catch {
         setError("Failed to fetch table names.");
@@ -58,33 +60,33 @@ const FileDataTable = ({ selectedSetFiles }) => {
         const mergedData = {};
         let newColumns = ["serial_number", "Tunning_param"];
 
-        const fetchPromises = Object.values(selectedSetFiles).map(async (file) => {
-          const tableName = tableNames[file.setting_id];
-          const columnName = file.name;
+        await Promise.all(
+          Object.values(selectedSetFiles).map(async (file) => {
+            const tableName = tableNames[file.setting_id];
+            const columnName = file.name;
 
-          if (tableName && columnName) {
-            const data = await fetchTableData(tableName, columnName);
-            if (data?.rows) {
-              newColumns.push(columnName);
-              data.rows.forEach((row) => {
-                const id = row.id;
-                if (!mergedData[id]) {
-                  mergedData[id] = {
-                    id: row.id,
-                    serial_number: row.serial_number,
-                    Tunning_param: row.Tunning_param,
-                    setting_id: file.setting_id,
-                  };
-                }
-                mergedData[id][columnName] = row[columnName] || "-";
-              });
+            if (tableName && columnName) {
+              const data = await fetchTableData(tableName, columnName);
+              if (data?.rows) {
+                newColumns.push(columnName);
+                data.rows.forEach((row) => {
+                  const id = row.id;
+                  if (!mergedData[id]) {
+                    mergedData[id] = {
+                      id: row.id,
+                      serial_number: row.serial_number,
+                      Tunning_param: row.Tunning_param,
+                      setting_id: file.setting_id,
+                    };
+                  }
+                  mergedData[id][columnName] = row[columnName] || "-";
+                });
+              }
             }
-          }
-        });
+          })
+        );
 
-        await Promise.all(fetchPromises);
         setColumns([...new Set(newColumns)]);
-
         const mergedArray = Object.values(mergedData).sort((a, b) => a.serial_number - b.serial_number);
         setTableData(mergedArray);
       } catch {
@@ -104,158 +106,188 @@ const FileDataTable = ({ selectedSetFiles }) => {
 
   const handleChange = (e, rowId, colName) => {
     const newValue = e.target.value;
+    const isNewRow = newRows.some(nr => nr.tempId === rowId);
+    if (isNewRow) {
+      setTableData(prev =>
+        prev.map(row => (row.id === rowId ? { ...row, [colName]: newValue } : row))
+      );
+      return;
+    }
+
     setEditedCells(prev => ({
       ...prev,
       [rowId]: {
         ...prev[rowId],
         [colName]: newValue,
-      }
+      },
     }));
+
     setTableData(prev =>
-      prev.map(row =>
-        row.id === rowId ? { ...row, [colName]: newValue } : row
-      )
+      prev.map(row => (row.id === rowId ? { ...row, [colName]: newValue } : row))
     );
   };
 
-  const handleAddRow = async (refRow, position) => {
-    const tableName = tableNames[refRow.setting_id];
-    if (!tableName) return;
+  const handleAddRow = (refRow) => {
+    const newTempId = `temp-${Date.now()}`;
+    const index = tableData.findIndex(row => row.id === refRow.id);
+    const prev = tableData[index];
+    const next = tableData[index + 1];
   
-    // Construct rowData to send to backend
-    const rowData = {};
+    let newSerial;
+    if (next) {
+      newSerial = (parseFloat(prev.serial_number) + parseFloat(next.serial_number)) / 2;
+    } else {
+      newSerial = parseFloat(prev.serial_number) + 1;
+    }
+  
+    const newRow = {
+      id: newTempId,
+      setting_id: refRow.setting_id,
+      serial_number: newSerial,
+      Tunning_param: "",
+    };
+  
     columns.forEach(col => {
-      if (col === "Tunning_param") {
-        rowData[col] = ""; // Empty string for Tunning_param
-      } else if (col !== "id" && col !== "serial_number" && col !== "setting_id") {
-        rowData[col] = 1200; // Default value
+      if (!["id", "serial_number", "Tunning_param", "setting_id"].includes(col)) {
+        newRow[col] = 1200;
       }
     });
-    const defaultValue = 1200;
-    const response = await addRowAPI(tableName, refRow.id, position, rowData,defaultValue);
   
-    if (response?.success && response?.newRow) {
-      const newRow = { ...response.newRow, setting_id: refRow.setting_id };
-      setTableData(prevData => {
-        const index = prevData.findIndex(row => row.id === refRow.id);
-        const insertAt = position === "above" ? index : index + 1;
-        const newData = [...prevData];
-        newData.splice(insertAt, 0, newRow);
-        return newData;
-      });
+    setTableData(prev => {
+      const updated = [...prev];
+      updated.splice(index + 1, 0, newRow);
+      return updated;
+    });
   
-      // Focus edit on Tunning_param cell of the new row
-      setEditingCell({ rowId: response.newRow.id, colName: "Tunning_param" });
-    }
+    setNewRows(prev => [...prev, {
+      tempId: newTempId,
+      refId: next?.id ?? refRow.id,  // Take the ID of the row *below*, or fallback
+      position: "below",             // insert above the row below
+      rowData: newRow,
+    }]);
   };
   
 
-  const handleSaveAll = async () => {
+  const handleSaveEditedCells = async () => {
     for (const rowId in editedCells) {
       const changes = editedCells[rowId];
       const settingId = tableData.find(row => row.id == rowId)?.setting_id;
       const tableName = tableNames[settingId];
-
       if (!tableName) continue;
 
       for (const colName in changes) {
-        const value = changes[colName];
-        await updateRowAPI(tableName, rowId, colName, value);
+        await updateRowAPI(tableName, rowId, colName, changes[colName]);
       }
     }
 
     setEditedCells({});
-    alert("Changes saved successfully!");
+    alert("Edited cells saved successfully!");
   };
 
+  const handleSaveNewRows = async () => {
+    // let x = 0;
+  
+    for (const newRow of newRows) {
+      const refRow = tableData.find(r => r.id === newRow.refId);
+      const settingId = refRow?.setting_id;
+      const tableName = tableNames[settingId];
+  
+      if (!tableName) continue;
+  
+      const rowInState = tableData.find(r => r.id === newRow.tempId);
+      if (!rowInState?.Tunning_param) {
+        alert("Tunning_param is required before saving new rows.");
+        return;
+      }
+  
+      const finalRowData = {};
+      columns.forEach(col => {
+        if (!["id", "serial_number", "setting_id"].includes(col)) {
+          finalRowData[col] = rowInState[col] ?? 1200;
+        }
+      });
+  
+      const adjustedRefId = !isNaN(parseInt(newRow.refId))
+        ? parseInt(newRow.refId) 
+        : newRow.refId;
+  
+      const response = await addRowAPI(
+        tableName,
+        adjustedRefId,            // reference ID with +x adjustment
+        newRow.position,
+        finalRowData,
+        rowInState.serial_number
+      );
+  
+      if (response?.success && response?.newRow) {
+        const actualRow = { ...response.newRow, setting_id: rowInState.setting_id };
+  
+        setTableData(prev => {
+          const index = prev.findIndex(row => row.id === newRow.tempId);
+          const updated = [...prev];
+          updated.splice(index, 1, actualRow);
+          return updated;
+        });
+  
+        // x++; // increment for next insertion
+      }
+    }
+  
+    setNewRows([]);
+    alert("New rows saved successfully!");
+  };
+  const handleSaveAllChanges = async () => {
+    if (Object.keys(editedCells).length > 0) {
+      await handleSaveEditedCells();
+    }
+    if (newRows.length > 0) {
+      await handleSaveNewRows();
+    }
+  };
+  
+  
   return (
-    <div style={{ padding: "20px", maxWidth: "100%", overflowX: "auto", position: "relative" }}>
-      {/* Toggle hex/decimal display format */}
+    <div className="file-table-container">
       <button
         onClick={() => setDisplayFormat(displayFormat === "hex" ? "dec" : "hex")}
-        style={{
-          marginBottom: "12px",
-          padding: "8px 16px",
-          backgroundColor: "#007bff",
-          color: "#fff",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer"
-        }}
+        className="toggle-format-button"
       >
         Switch to {displayFormat === "hex" ? "Decimal" : "Hexadecimal"}
       </button>
-      <div style={{ position: "relative", marginLeft: "30px" }}>
-      <table
-        style={{
-          borderCollapse: "collapse",
-          width: "100%",
-          backgroundColor: "#fff",
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)"
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: "#f1f1f1" }}>
-            <th style={{ padding: "12px", textAlign: "left" }}>Serial</th>
-            {columns
-              .filter(col => col !== "serial_number" && col !== "id")
-              .map(col => (
-                <th key={col} style={{ padding: "12px", textAlign: "left" }}>
-                  {col}
-                </th>
+
+      <div className="table-wrapper">
+        <table className="file-data-table">
+          <thead>
+            <tr className="table-header">
+              <th>Serial</th>
+              {columns.filter(col => col !== "serial_number" && col !== "id").map(col => (
+                <th key={col}>{col}</th>
               ))}
-          </tr>
-        </thead>
-        <tbody>
-          {/* + Button Above First Row */}
-          {tableData.length > 0 && (
-            <tr style={{ height: "0px", position: "relative" }}>
-              <td colSpan={columns.length} style={{ padding: 0, position: "relative" }}>
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "-35px",
-                    top: "50%",
-                    transform: "translateY(-50%)"
-                  }}
-                >
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.length > 0 && (
+              <tr className="add-row">
+                <td colSpan={columns.length}>
                   <button
-                    onClick={() => handleAddRow(tableData[0], "above")}
-                    style={{
-                      fontSize: "14px",
-                      padding: "4px 8px",
-                      borderRadius: "50%",
-                      border: "1px solid #ccc",
-                      backgroundColor: "#e9ecef",
-                      cursor: "pointer",
-                      lineHeight: "1"
-                    }}
+                    className="add-button"
+                    onClick={() => handleAddRow(tableData[0])}
                   >
                     +
                   </button>
-                </div>
-              </td>
-            </tr>
-          )}
-  
-          {/* Data Rows with in-between + buttons */}
-          {tableData.map((row, rowIndex) => (
-            <React.Fragment key={row.id}>
-              <tr style={{ borderBottom: "1px solid #ddd" }}>
-                <td style={{ padding: "10px" }}>{row.serial_number}</td>
-                {columns
-                  .filter(col => col !== "serial_number" && col !== "id")
-                  .map(col => (
+                </td>
+              </tr>
+            )}
+
+            {tableData.map((row) => (
+              <React.Fragment key={row.id}>
+                <tr className="data-row">
+                  <td>{row.serial_number || "-"}</td>
+                  {columns.filter(col => col !== "serial_number" && col !== "id").map(col => (
                     <td
                       key={`${row.id}-${col}`}
                       onDoubleClick={() => setEditingCell({ rowId: row.id, colName: col })}
-                      style={{
-                        padding: "10px",
-                        backgroundColor: editedCells?.[row.id]?.[col]
-                          ? "#fff3cd"
-                          : "transparent",
-                        cursor: "pointer"
-                      }}
+                      className={`cell ${editedCells?.[row.id]?.[col] ? "edited-cell" : ""}`}
                     >
                       {editingCell?.rowId === row.id && editingCell?.colName === col ? (
                         <input
@@ -263,12 +295,7 @@ const FileDataTable = ({ selectedSetFiles }) => {
                           value={editedCells?.[row.id]?.[col] ?? row[col]}
                           onChange={(e) => handleChange(e, row.id, col)}
                           onBlur={() => setEditingCell(null)}
-                          style={{
-                            width: "100%",
-                            padding: "6px",
-                            fontSize: "14px",
-                            boxSizing: "border-box"
-                          }}
+                          className="cell-input"
                         />
                       ) : col !== "Tunning_param" ? (
                         convertValue(row[col])
@@ -277,62 +304,33 @@ const FileDataTable = ({ selectedSetFiles }) => {
                       )}
                     </td>
                   ))}
-              </tr>
-  
-              {/* + Button Between Rows */}
-              <tr style={{ height: "0px", position: "relative" }}>
-                <td colSpan={columns.length} style={{ padding: 0, position: "relative" }}>
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "-35px",
-                      top: "50%",
-                      transform: "translateY(-50%)"
-                    }}
-                  >
+                </tr>
+                <tr className="add-row">
+                  <td colSpan={columns.length}>
                     <button
-                      onClick={() => handleAddRow(row, "below")}
-                      style={{
-                        fontSize: "14px",
-                        padding: "4px 8px",
-                        borderRadius: "50%",
-                        border: "1px solid #ccc",
-                        backgroundColor: "#e9ecef",
-                        cursor: "pointer",
-                        lineHeight: "1"
-                      }}
+                      className="add-button"
+                      onClick={() => handleAddRow(row)}
                     >
                       +
                     </button>
-                  </div>
-                </td>
-              </tr>
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
-      {/* Save All Changes Button */}
-      {Object.keys(editedCells).length > 0 && (
-        <button
-          onClick={handleSaveAll}
-          style={{
-            marginTop: "20px",
-            padding: "10px 20px",
-            backgroundColor: "#28a745",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "14px"
-          }}
-        >
-          Save All Changes
-        </button>
-      )}
+                  </td>
+                </tr>
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="button-group">
+  {(Object.keys(editedCells).length > 0 || newRows.length > 0) && (
+    <button onClick={handleSaveAllChanges} className="save-button">
+      Save All Changes
+    </button>
+  )}
+</div>
+
     </div>
   );
-  
 };
 
 export default FileDataTable;
