@@ -217,11 +217,11 @@ export const fetchTableData = async (tableName, columnName) => {
 };
  
 
-export const updateRowAPI = async (tableName, id, columnName, value) => {
+export const updateRowAPI = async (tableName, id, columnName, value,regmapEntry) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/setfile/update-row`,
-      { tableName, id, columnName, value },
+      { tableName, id, columnName, value,regmapEntry },
       {
         headers: { ...getAuthHeaders().headers },
       }
@@ -247,6 +247,38 @@ export const addRowAPI = async (tableName, referenceId, position, rowData,defaul
   } catch (error) {
     console.error("Error adding row:", error);
     throw error;
+  }
+};
+
+export const fetchRegmap = async (projectId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/regmap/${projectId}`, getAuthHeaders());
+    const fileBlob = await response.blob(); // Get the file as a Blob
+    const text = await fileBlob.text(); // Convert the Blob into text
+    // console.log("Raw Text from Regmap:", text);
+
+    // Parse the text content
+    const lines = text.trim().split("\n");
+    const regex = /#define\s+(\w+)\s+0x([0-9A-Fa-f]+)\s+\/\/\s+0x([0-9A-Fa-f]+)\s/;
+    const data = {};
+
+    lines.forEach(line => {
+      const match = line.match(regex);
+      if (match) {
+        const [_, name, value, offset] = match;
+        data[name] = {
+          Address: value,
+          Value: offset
+        };
+      }
+    });
+
+    console.log("Parsed Regmap Data:", data);
+    return data;
+
+  } catch (err) {
+    console.error("Error fetching or parsing regmap:", err);
+    return null;
   }
 };
 
