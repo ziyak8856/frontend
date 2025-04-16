@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchSetFilesbyMode } from "../services/api";
+import { fetchSetFilesbyMode,markFileAsDeleted } from "../services/api";
 import "../styles/FileList.css";
 
 const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles }) => {
@@ -9,7 +9,7 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles }) => {
     const fetchData = async () => {
       if (!Array.isArray(selectedModes) || selectedModes.length === 0) {
         setFileData([]);
-        setSelectedSetFiles({}); // Reset selected files
+        setSelectedSetFiles({});
         return;
       }
 
@@ -43,14 +43,46 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles }) => {
     setSelectedSetFiles((prev) => {
       const updatedFiles = { ...prev };
       if (updatedFiles[file.id]) {
-        delete updatedFiles[file.id]; // Unselect file
+        delete updatedFiles[file.id];
       } else {
-        updatedFiles[file.id] = file; // Select file
+        updatedFiles[file.id] = file;
       }
       return updatedFiles;
     });
   };
 
+  const handleDeleteFile = async (fileToDelete) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${fileToDelete.full_name}"?`
+    );
+  
+    if (!confirmDelete) return;
+  
+    // Remove from selectedSetFiles
+    setSelectedSetFiles((prev) => {
+      const updatedFiles = { ...prev };
+      delete updatedFiles[fileToDelete.id];
+      return updatedFiles;
+    });
+  
+    // Remove from fileData state
+    setFileData((prevData) =>
+      prevData.map(({ mode, files }) => ({
+        mode,
+        files: files.filter((file) => file.id !== fileToDelete.id),
+      }))
+    );
+  
+    try {
+      await markFileAsDeleted(fileToDelete); // Send full object to backend
+      console.log("File sent to backend for deletion:", fileToDelete);
+      alert(`"${fileToDelete.full_name}" has been successfully deleted.`);
+    } catch (error) {
+      console.error("Failed to send deleted file to backend:", error);
+      alert(`Failed to delete "${fileToDelete.full_name}". Please try again.`);
+    }
+  };
+  
   return (
     <div>
       <ul className="mode-list">
@@ -67,12 +99,19 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles }) => {
                     onChange={() => handleCheckboxChange(file)}
                   />
                   <label htmlFor={file.id}>{file.full_name}</label>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDeleteFile(file)}
+                  >
+                    Delete
+                  </button>
                 </li>
               ))}
             </ul>
           </li>
         ))}
       </ul>
+      {/* {console.log("Selected Set Files:", selectedSetFiles)}   */}
     </div>
   );
 };

@@ -17,6 +17,19 @@
     margin-top: 5px;
     padding-left: 20px;
   }
+  .delete-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .delete-button:hover {
+    background-color: darkred;
+  }
   
   .file-item {
     display: flex;

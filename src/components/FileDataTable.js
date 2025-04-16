@@ -4,7 +4,8 @@ import {
   fetchTableData,
   addRowAPI,
   updateRowAPI,
-  fetchRegmap
+  fetchRegmap,
+  deleteRowAPI,
 } from "../services/api";
 import "../styles/FileData.css";
 
@@ -20,6 +21,7 @@ const [error, setError] = useState("");
 const [newRows, setNewRows] = useState([]);
 const [regmapContent, setRegmapContent] = useState("Loading regmap content...");
 const [focusedRow, setFocusedRow] = useState(null);
+const[deleted,setDeletedRows] = useState([]);
 useEffect(() => {
   const fetchAndSetRegmap = async () => {
     const projectId = localStorage.getItem("projectId");
@@ -340,6 +342,55 @@ const handleSaveNewRows = async () => {
   setNewRows([]);
   alert("New rows saved successfully!");
 };
+const handleDeleteRow = (rowId) => {
+  const rowToDelete = tableData.find(row => row.id === rowId);
+  if (!rowToDelete) return;
+
+  const isTemp = rowId.toString().startsWith("temp");
+
+  // Immediately delete temp row from frontend
+  if (isTemp) {
+    setTableData(prev => prev.filter(row => row.id !== rowId));
+    setNewRows(prev => prev.filter(row => row.tempId !== rowId));
+    return;
+  }
+
+  const confirmed = window.confirm("Are you sure you want to delete this row?");
+  if (!confirmed) return;
+
+  setDeletedRows(prev => [...prev, rowToDelete]); // Store full row object
+  console.log(rowToDelete, "rowToDelete");
+  setTableData(prev => prev.filter(row => row.id !== rowId)); // Remove from UI
+};
+
+
+
+const handleSaveDeletedRows = async () => {
+  if (deleted.length === 0) return;
+
+  let allSuccessful = true;
+
+  for (const row of deleted) {
+    const tableName = tableNames[row.setting_id];
+    if (!tableName) continue;
+    console.log(tableName, "tableName");
+    console.log(row.id, "rowId");
+    const response = await deleteRowAPI(tableName, row.id);
+
+    if (!response?.success) {
+      allSuccessful = false;
+      console.error(`Failed to delete row with ID ${row.id}`, response);
+    }
+  }
+
+  if (allSuccessful) {
+    setDeletedRows([]);
+    alert("All deletions saved to backend!");
+  } else {
+    alert("Some deletions failed. Please try again.");
+  }
+};
+
 
 // 🧠 Unified Save Button
 const handleSaveAllChanges = async () => {
@@ -349,15 +400,16 @@ const handleSaveAllChanges = async () => {
   if (newRows.length > 0) {
     await handleSaveNewRows();
   }
+  // console.log(deletedRowIds, "deletedRowIds");
+  if (deleted.length > 0) {
+    await handleSaveDeletedRows();
+  }
 };
-  
   
 return (
   <div className="file-table-container">
     <button
-      onClick={() =>
-        setDisplayFormat(displayFormat === "hex" ? "dec" : "hex")
-      }
+      onClick={() => setDisplayFormat(displayFormat === "hex" ? "dec" : "hex")}
       className="toggle-format-button"
     >
       Switch to {displayFormat === "hex" ? "Decimal" : "Hexadecimal"}
@@ -368,21 +420,17 @@ return (
         <thead>
           <tr className="table-header">
             <th>Serial</th>
-            {columns
-              .filter(col => col !== "serial_number" && col !== "id")
-              .map(col => (
-                <th key={col}>{col}</th>
-              ))}
+            {columns.filter(col => col !== "serial_number" && col !== "id").map(col => (
+              <th key={col}>{col}</th>
+            ))}
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
           {tableData.length > 0 && (
             <tr className="add-row">
-              <td colSpan={columns.length}>
-                <button
-                  className="add-button"
-                  onClick={() => handleAddRow(tableData[0])}
-                >
+              <td colSpan={columns.length + 1}>
+                <button className="add-button" onClick={() => handleAddRow(tableData[0])}>
                   +
                 </button>
               </td>
@@ -393,91 +441,77 @@ return (
             <React.Fragment key={row.id}>
               <tr className="data-row">
                 <td>{row.serial_number || "-"}</td>
-                {columns
-                  .filter(col => col !== "serial_number" && col !== "id")
-                  .map(col => (
-                    <td
-                      key={`${row.id}-${col}`}
-                      onDoubleClick={() =>
-                        setEditingCell({ rowId: row.id, colName: col })
-                      }
-                      className={`cell ${
-                        editedCells?.[row.id]?.[col] ? "edited-cell" : ""
-                      }`}
-                    >
-                      {editingCell?.rowId === row.id &&
-                      editingCell?.colName === col ? (
-                        col === "Tunning_param" ? (
-                          <div className="autocomplete-wrapper">
-                            <input
-                              autoFocus
-                              value={
-                                editedCells?.[row.id]?.[col] ?? row[col] ?? ""
-                              }
-                              onChange={e => handleChange(e, row.id, col)}
-                              onBlur={() => setEditingCell(null)}
-                              className="cell-input"
-                              onFocus={() => setFocusedRow(row.id)}
-                            />
-                            {focusedRow === row.id && (
-                              <div className="suggestion-box">
-                                {Object.keys(regmapContent)
-                                  .filter(key =>
-                                    key
-                                      .toLowerCase()
-                                      .includes(
-                                        (
-                                          editedCells?.[row.id]?.[col] ??
-                                          row[col] ??
-                                          ""
-                                        ).toLowerCase()
-                                      )
-                                  )
-                                  .slice(0, 50)
-                                  .map((key, index) => (
-                                    <div
-                                      key={index}
-                                      className="suggestion-item"
-                                      onMouseDown={() => {
-                                        handleChange(
-                                          { target: { value: key } },
-                                          row.id,
-                                          col
-                                        );
-                                        setEditingCell(null);
-                                      }}
-                                    >
-                                      {key}
-                                    </div>
-                                  ))}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
+                {columns.filter(col => col !== "serial_number" && col !== "id").map(col => (
+                  <td
+                    key={`${row.id}-${col}`}
+                    onDoubleClick={() => setEditingCell({ rowId: row.id, colName: col })}
+                    className={`cell ${editedCells?.[row.id]?.[col] ? "edited-cell" : ""}`}
+                  >
+                    {editingCell?.rowId === row.id && editingCell?.colName === col ? (
+                      col === "Tunning_param" ? (
+                        <div className="autocomplete-wrapper">
                           <input
                             autoFocus
-                            value={
-                              editedCells?.[row.id]?.[col] ?? row[col] ?? ""
-                            }
+                            value={editedCells?.[row.id]?.[col] ?? row[col] ?? ""}
                             onChange={e => handleChange(e, row.id, col)}
                             onBlur={() => setEditingCell(null)}
                             className="cell-input"
+                            onFocus={() => setFocusedRow(row.id)}
                           />
-                        )
-                      ) : col !== "Tunning_param" ? (
-                        convertValue(row[col])
+                          {focusedRow === row.id && (
+                            <div className="suggestion-box">
+                              {Object.keys(regmapContent)
+                                .filter(key =>
+                                  key
+                                    .toLowerCase()
+                                    .includes(
+                                      (editedCells?.[row.id]?.[col] ?? row[col] ?? "").toLowerCase()
+                                    )
+                                )
+                                .slice(0, 50)
+                                .map((key, index) => (
+                                  <div
+                                    key={index}
+                                    className="suggestion-item"
+                                    onMouseDown={() => {
+                                      handleChange({ target: { value: key } }, row.id, col);
+                                      setEditingCell(null);
+                                    }}
+                                  >
+                                    {key}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
                       ) : (
-                        row[col]
-                      )}
-                    </td>
-                  ))}
+                        <input
+                          autoFocus
+                          value={editedCells?.[row.id]?.[col] ?? row[col] ?? ""}
+                          onChange={e => handleChange(e, row.id, col)}
+                          onBlur={() => setEditingCell(null)}
+                          className="cell-input"
+                        />
+                      )
+                    ) : col !== "Tunning_param" ? (
+                      convertValue(row[col])
+                    ) : (
+                      row[col]
+                    )}
+                  </td>
+                ))}
+                <td>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDeleteRow(row.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
               <tr className="add-row">
-                <td colSpan={columns.length}>
-                  <button
-                    className="add-button"
-                    onClick={() => handleAddRow(row)}
-                  >
+                <td colSpan={columns.length + 1}>
+                  <button className="add-button" onClick={() => handleAddRow(row)}>
                     +
                   </button>
                 </td>
@@ -489,7 +523,7 @@ return (
     </div>
 
     <div className="button-group">
-      {(Object.keys(editedCells).length > 0 || newRows.length > 0) && (
+      {(Object.keys(editedCells).length > 0 || deleted.length > 0||newRows.length > 0) && (
         <button onClick={handleSaveAllChanges} className="save-button">
           Save All Changes
         </button>

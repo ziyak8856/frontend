@@ -282,3 +282,31 @@ export const fetchRegmap = async (projectId) => {
   }
 };
 
+export const deleteRowAPI = async (tableName, rowId) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/delete-row`,
+      { tableName, rowId },
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting row:", error);
+    return { success: false };
+  }
+};
+export const markFileAsDeleted = async (file) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/mark-deleted`,
+      file,
+      { headers: { ...getAuthHeaders().headers } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error marking file as deleted:", error);
+    throw error;
+  }
+};
