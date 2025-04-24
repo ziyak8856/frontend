@@ -65,12 +65,12 @@ export const fetchCustomers = async (projectId) => {
 };
 
 // Add a new customer to a project
-export const addCustomers = async (projectId, customers) => {
+export const addCustomers = async (projectId, customers,selectedIndexes) => {
   try {
-    // console.log(customers);
+    console.log("selectedIndexes",selectedIndexes);
     const response = await axios.post(
       `${API_BASE_URL}/customers`,
-      { projectId, customers },
+      { projectId, customers,selectedIndexes },
       getAuthHeaders()
     );
     return response.data;
@@ -148,13 +148,14 @@ export const uploadRegmap = async ({ file, projectId, name }) => {
   }
 };
 export const addSetting = async (customerId, name, tableName, uniqueArray) => {
+  console.log("customerId",customerId);
   try {
     const response = await axios.post(`${API_BASE_URL}/settings/add`, {
       customer_id: customerId,
       name,
       table_name: tableName,
       uniqueArray1: uniqueArray
-    });
+    },getAuthHeaders());
 
     return response.data;
   } catch (error) {

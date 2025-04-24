@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getCustomerById } from "../services/api";
+import { getCustomerById,addSetting } from "../services/api";
 
 
 const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, customerId,uniqueArray1 }) => {
@@ -19,16 +19,17 @@ const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, custome
       const updatedCustomerName = data;
       console.log("up",updatedCustomerName);
 
-      // Construct table name
-    //   const tableName = `${projectName}_${updatedCustomerName}_${interfaceType}_${clockRate}`;
-    //   const settingData = {
-    //     customer_id: customerId,
-    //     name: `${interfaceType}_${clockRate}`,
-    //     table_name: tableName,
-    //   };
+     // Construct table name
+      const tableName = `${projectName}_${updatedCustomerName}_${interfaceType}_${clockRate}`;
+      const settingData = {
+        customer_id: customerId,
+        name: `${interfaceType}_${clockRate}`,
+        table_name: tableName,
+        uniqueArray: uniqueArray1,
+      };
 
-    //   // Add new setting to database
-    //   await addSetting(settingData);
+      // Add new setting to database
+      await addSetting(settingData);
       onClose(); // Close modal after successful submission
     } catch (error) {
       console.error("Error handling MKCL Table addition:", error);
