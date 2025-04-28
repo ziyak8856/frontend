@@ -148,7 +148,7 @@ export const uploadRegmap = async ({ file, projectId, name }) => {
   }
 };
 export const addSetting = async (customerId, name, tableName, uniqueArray) => {
-  console.log("customerId",customerId);
+  console.log("setiing",customerId, name, tableName, uniqueArray);
   try {
     const response = await axios.post(`${API_BASE_URL}/settings/add`, {
       customer_id: customerId,

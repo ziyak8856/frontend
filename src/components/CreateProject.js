@@ -121,10 +121,13 @@ const CreateProject = () => {
       localStorage.setItem("projectName", name);
       console.log(`Project created successfully: ID ${response.projectId}`);
       // ALTER TABLE customer ADD COLUMN selectedmv VARCHAR(255) DEFAULT NULL;
+//       ALTER TABLE customer
+// ADD COLUMN mvcnt INT DEFAULT 0;
 
+      console.log(customers)
   
       const customerResponse = await addCustomers(parseInt(response.projectId), customers,selectedIndexes);
-  
+      console.log("Customer response:", customerResponse);
       if (customerResponse && customerResponse.customers) {
         const settings = customerResponse.customers.map((customer) => ({
           name: interfaceType,
