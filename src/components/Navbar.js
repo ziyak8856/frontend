@@ -29,7 +29,7 @@ const mergedGroups = [
   "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
   "//$MV6_Start[]"
 ];
-const Navbar = ({selectedModes,setSelectedModes}) => {
+const Navbar = ({selectedModes,setSelectedModes, selectedCustomer, setSelectedCustomer }) => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
     const projectName = localStorage.getItem("projectName") || "No Project Selected";
@@ -40,7 +40,7 @@ const Navbar = ({selectedModes,setSelectedModes}) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [message, setMessage] = useState("");
     const [customers, setCustomers] = useState([]); // Store customers list
-    const [selectedCustomer, setSelectedCustomer] = useState(""); // Store selected customer
+   // const [selectedCustomer, setSelectedCustomer] = useState(""); // Store selected customer
     const [isModalOpen, setModalOpen] = useState(false);
     const [showAlert, setShowAlert] = useState(false); // Control alert display
     const [modes, setModes] = useState([]);

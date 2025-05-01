@@ -7,7 +7,7 @@ import "../styles/Dashboard.css";
 
 const Dashboard = () => {
   const [showGlobal, setShowGlobal] = useState(true);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
   const [selectedModes, setSelectedModes] = useState(null);
   const [selectedSetFiles, setSelectedSetFiles] = useState({});
   
@@ -18,6 +18,8 @@ const Dashboard = () => {
       <Navbar
         selectedModes={selectedModes}
         setSelectedModes={setSelectedModes}
+        selectedCustomer={selectedCustomer}
+        setSelectedCustomer={setSelectedCustomer}
        
       />
 
@@ -32,9 +34,11 @@ const Dashboard = () => {
         <div className="section file-list">
           <h2>Available Files</h2>
           <FileList
+
           selectedModes={selectedModes}
           selectedSetFiles={selectedSetFiles}
           setSelectedSetFiles={setSelectedSetFiles}
+          selectedCustomer={selectedCustomer}
         />
         </div>
 

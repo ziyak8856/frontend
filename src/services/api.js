@@ -311,3 +311,15 @@ export const markFileAsDeleted = async (file) => {
     throw error;
   }
 };
+export const updateMVHeaderForFile = async (fileId, selectedmv,selectedCustomer) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/update-mv`,
+      { file_id: fileId, selectedmv,selectedCustomer },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+};
