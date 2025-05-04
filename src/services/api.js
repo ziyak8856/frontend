@@ -322,3 +322,15 @@ export const updateMVHeaderForFile = async (fileId, selectedmv,selectedCustomer,
     throw error.response?.data?.message || "Failed to update MV headers.";
   }
 };
+export const updateMVHeaderForCustomer = async (customerId, selectedIndexes) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/customers/update-mv`,
+      {customerId, selectedIndexes },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+}

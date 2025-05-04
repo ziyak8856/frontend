@@ -7,6 +7,7 @@ import { uploadRegmap, fetchCustomers,fetchModes,fetchProjectById,fetchSettings,
 import AddCustomerModal from "./AddCustomerModal";
 import AddModeModal from "./AddModeModal";
 import AddMkclTableModal from "./AddMkclTableModal";
+import EditCustomerModal from "./EditCustomerModal";
 const mergedGroups = [
   "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
   "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
@@ -36,7 +37,7 @@ const Navbar = ({selectedModes,setSelectedModes, selectedCustomer, setSelectedCu
     const projectId = localStorage.getItem("projectId");
 
    // const [selectedModes, setSelectedModes] = useState([]);
-    const [valueType, setValueType] = useState("hex");
+   
     const [selectedFile, setSelectedFile] = useState(null);
     const [message, setMessage] = useState("");
     const [customers, setCustomers] = useState([]); // Store customers list
@@ -51,6 +52,7 @@ const Navbar = ({selectedModes,setSelectedModes, selectedCustomer, setSelectedCu
     const [selectedMkclTables, setSelectedMkclTables] = useState([]);
     const [ismkclModalOpen, setmkclModalOpen] = useState(false);
     const [selectedmv, setSelectedmv] = useState([]);
+    const[isEditModalOpen,setEditModalOpen] = useState(false);
     const toggleSelection = (item, setSelected) => {
         setSelected((prev) =>
             prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
@@ -174,9 +176,7 @@ const Navbar = ({selectedModes,setSelectedModes, selectedCustomer, setSelectedCu
       try {
           const data = await fetchProjectById(projectId);
           setProjectDetails(data);
-         // console.log(data.mv4);
-         // extractUniqueVariables(data.mv4, data.mv6);
-         // console.log(uniqueVariables)
+     
       } catch (error) {
           console.error("Failed to fetch project details:", error);
       }
@@ -203,10 +203,7 @@ const Navbar = ({selectedModes,setSelectedModes, selectedCustomer, setSelectedCu
     //    // Convert Set to Array
      console.log("Unique Variables:", uniqueVariables); // Log unique variables
   };
-  useEffect(() => {
-    if(uniqueVariables.length)
-    console.log("Updated unique variables:", uniqueVariables);
-  }, [uniqueVariables]);
+
 
   const fetchTables = async () => {
     try {
@@ -257,6 +254,8 @@ const Navbar = ({selectedModes,setSelectedModes, selectedCustomer, setSelectedCu
                             fetchCustomersList(projectId);  // Fetch updated customers after modal closes
                         }} 
                     />
+                     <button  className="nav-btn" onClick={() => setEditModalOpen(true)} disabled={!selectedCustomer}>EditMV</button>
+<EditCustomerModal isOpen={isEditModalOpen} onClose={() => setEditModalOpen(false)} customerId={selectedCustomer} />
                     <button className="nav-btn">Edit</button>
                     <button className="nav-btn">Save to DB</button>
                     <button className="nav-btn">Create Setfile</button>
