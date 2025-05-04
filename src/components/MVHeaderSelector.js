@@ -54,7 +54,7 @@ const MVHeaderSelector = ({ selectedmv = "", fileId,selectedCustomer, onSave, on
     try {
 
         console.log("file",fileId)
-      await updateMVHeaderForFile(fileId, selectedString,selectedCustomer);
+      await updateMVHeaderForFile(fileId, selectedString,selectedCustomer,selectedIndexes);
       onSave(selectedString);
       onClose();
     } catch (error) {

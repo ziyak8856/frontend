@@ -147,14 +147,13 @@ export const uploadRegmap = async ({ file, projectId, name }) => {
     throw error.response?.data?.message || "Regmap upload failed.";
   }
 };
-export const addSetting = async (customerId, name, tableName, uniqueArray) => {
-  console.log("setiing",customerId, name, tableName, uniqueArray);
+export const addSetting = async (customerId, name, tableName) => {
+  console.log("setiing",customerId, name, tableName);
   try {
     const response = await axios.post(`${API_BASE_URL}/settings/add`, {
       customer_id: customerId,
       name,
       table_name: tableName,
-      uniqueArray1: uniqueArray
     },getAuthHeaders());
 
     return response.data;
@@ -311,11 +310,11 @@ export const markFileAsDeleted = async (file) => {
     throw error;
   }
 };
-export const updateMVHeaderForFile = async (fileId, selectedmv,selectedCustomer) => {
+export const updateMVHeaderForFile = async (fileId, selectedmv,selectedCustomer,selectedIndexes) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/setfile/update-mv`,
-      { file_id: fileId, selectedmv,selectedCustomer },
+      { file_id: fileId, selectedmv,selectedCustomer,selectedIndexes },
       getAuthHeaders()
     );
     return response.data;

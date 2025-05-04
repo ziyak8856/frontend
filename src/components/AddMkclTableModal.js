@@ -25,7 +25,7 @@ const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, custome
 
       // Add new setting to database
       const naa=`${interfaceType}_${clockRate}`
-      await addSetting(customerId,naa,tableName, uniqueArray1);
+      await addSetting(customerId,naa,tableName);
       alert("MKCL Table added successfully!");
       onClose(); // Close modal after successful submission
     } catch (error) {

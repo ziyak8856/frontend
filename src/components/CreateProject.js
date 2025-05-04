@@ -83,10 +83,10 @@ const CreateProject = () => {
     if (customers.length === 0) return setError("At least one customer is required.");
     if (!cphy && !dphy) return setError("Please select an Interface Type (CPHY/DPHY).");
     if (!clockRate) return setError("Clock Rate is required.");
-    if (showMv4 && selectedIndexes.filter(i => i < 10).length === 0)
-      return setError("Please select at least one MV4 line.");
-    if (showMv6 && selectedIndexes.filter(i => i >= 10).length === 0)
-      return setError("Please select at least one MV6 line.");
+    // if (showMv4 && selectedIndexes.filter(i => i < 10).length === 0)
+    //   return setError("Please select at least one MV4 line.");
+    // if (showMv6 && selectedIndexes.filter(i => i >= 10).length === 0)
+    //   return setError("Please select at least one MV6 line.");
     if (!regmapFile) return setError("Regmap file is required.");
     if (!regmapBinFile) return setError("Regmap Bin file is required.");
   
